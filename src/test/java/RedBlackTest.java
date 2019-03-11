@@ -1,16 +1,16 @@
-
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
-
-
+import com.pholser.junit.quickcheck.From;
+import com.pholser.junit.quickcheck.generator.Size;
+import edu.berkeley.cs.jqf.fuzz.Fuzz;
+import edu.berkeley.cs.jqf.fuzz.JQF;
 import org.junit.runner.RunWith;
-import com.pholser.junit.quickcheck.*;
-import com.pholser.junit.quickcheck.generator.*;
-import edu.berkeley.cs.jqf.fuzz.*;
 
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 @RunWith(JQF.class)
 public class RedBlackTest {
@@ -29,30 +29,26 @@ public class RedBlackTest {
 
     @Fuzz
     public void testUnion(@Size(max=10) List<@From(RedBlackGenerator.class) RedBlackTree> trees) {
+        //TODO do not store history; instead use the visitor
         RedBlackTree union = new RedBlackTree(Comparator.naturalOrder());
         for (RedBlackTree tree: trees) {
-            BSTIterator v = new BSTIterator();
+            BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
+                @Override
+                public <E> void visit(BinaryTreeNode<E> node) {
+                    union.add(node.getData());
+                }
+            };
             tree.root.traversePreorder(v);
-            for (Object o:  v.history) {
-                union.add(o);
-            }
         }
 
         for (RedBlackTree tree: trees) {
-            BSTIterator v = new BSTIterator();
+            BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
+                @Override
+                public <E> void visit(BinaryTreeNode<E> node) {
+                    assertTrue(union.contains(node.getData()));
+                }
+            };
             tree.root.traversePreorder(v);
-            for (Object o:  v.history) {
-                assumeTrue(union.contains(o));
-            }
-        }
-//        assumeTrue()
-    }
-
-    public class BSTIterator implements BinaryTreeNode.Visitor {
-        public List<Object> history = new LinkedList<>();
-        @Override
-        public <E> void visit(BinaryTreeNode<E> node) {
-            history.add(node.getData());
         }
     }
 }

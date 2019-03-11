@@ -29,30 +29,26 @@ public class RedBlackDirectTest {
 
     @Fuzz
     public void testUnion(@Size(max=10) List<@From(RedBlackGeneratorDirect.class) RedBlackTree> trees) {
+        //TODO do not store history; instead use the visitor
         RedBlackTree union = new RedBlackTree(Comparator.naturalOrder());
         for (RedBlackTree tree: trees) {
-            BSTIterator v = new BSTIterator();
+            BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
+                @Override
+                public <E> void visit(BinaryTreeNode<E> node) {
+                    union.add(node.getData());
+                }
+            };
             tree.root.traversePreorder(v);
-            for (Object o:  v.history) {
-                union.add(o);
-            }
         }
 
         for (RedBlackTree tree: trees) {
-            BSTIterator v = new BSTIterator();
+            BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
+                @Override
+                public <E> void visit(BinaryTreeNode<E> node) {
+                    assertTrue(union.contains(node.getData()));
+                }
+            };
             tree.root.traversePreorder(v);
-            for (Object o:  v.history) {
-                assumeTrue(union.contains(o));
-            }
-        }
-//        assumeTrue()
-    }
-
-    public class BSTIterator implements BinaryTreeNode.Visitor {
-        public List<Object> history = new LinkedList<>();
-        @Override
-        public <E> void visit(BinaryTreeNode<E> node) {
-            history.add(node.getData());
         }
     }
 }
