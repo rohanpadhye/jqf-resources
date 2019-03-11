@@ -62,7 +62,7 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
             @Override
             public <E> void visit(BinaryTreeNode<E> node) {
                 if (node.getLeft() == null && node.getRight() == null) {
-                    int leafDepth = pathLength(tree, (Node) node);
+                    int leafDepth = pathLength(tree, (RedBlackTree.Node) node);
                     if (depth == -1) {
                         depth = leafDepth;
                     } else if (depth != leafDepth) {
@@ -81,15 +81,15 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
             return valid;
     }
 
-    public int pathLength(RedBlackTree tree, Node node) {
+    public int pathLength(RedBlackTree tree, RedBlackTree.Node node) {
         // if root
         if (node == tree.getRoot()) {
             return 1;
         }
         if (!node.isRed) {
-            return 1 + pathLength(tree, (Node) node.getParent());
+            return 1 + pathLength(tree, (RedBlackTree.Node) node.getParent());
         } else {
-            return pathLength(tree, (Node) node.getParent());
+            return pathLength(tree, (RedBlackTree.Node) node.getParent());
         }
     }
 
@@ -100,9 +100,9 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
                 if (node.getLeft() == null && node.getRight() == null) {
                     return;
                 }
-                if (((Node) node).isRed) {
-                    if ( ((Node) node.getLeft()).isRed ||
-                            ((Node) node.getRight()).isRed  ) {
+                if (((RedBlackTree.Node) node).isRed) {
+                    if ( ((RedBlackTree.Node) node.getLeft()).isRed ||
+                            ((RedBlackTree.Node) node.getRight()).isRed  ) {
                         valid = false;
                     }
                 }
@@ -113,27 +113,27 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
     }
 
     // Generates a single RedBlackTree
-    private Node generateAux(SourceOfRandomness random, int SZ) {
+    private RedBlackTree.Node generateAux(SourceOfRandomness random, RedBlackTree tree, int SZ) {
 //            node.left;
         int datum = random.nextInt(-K, K);
-        Node node = new Node(datum);
+        RedBlackTree.Node node = tree.new Node(datum);
         node.isRed = random.nextBoolean();
         if (random.nextDouble() >= leafProbability) {
-            node.left = generateAux(random, SZ);
-            node.right = generateAux(random, SZ);
+            node.left = generateAux(random, tree, SZ);
+            node.right = generateAux(random, tree, SZ);
         }
         return node;
     }
 
     // Generates a single RedBlackTree
-    private Node generateIntervalAux(SourceOfRandomness random, int SZ, int min, int max) {
+    private RedBlackTree.Node generateIntervalAux(SourceOfRandomness random, RedBlackTree tree, int SZ, int min, int max) {
 //            node.left;
         int datum = random.nextInt(min, max);
-        Node node = new Node(datum);
+        RedBlackTree.Node node = tree.new Node(datum);
         node.isRed = random.nextBoolean();
         if (random.nextDouble() >= leafProbability) {
-            node.left = generateIntervalAux(random, SZ, min, datum);
-            node.right = generateIntervalAux(random, SZ, datum, max);
+            node.left = generateIntervalAux(random, tree, SZ, min, datum);
+            node.right = generateIntervalAux(random, tree, SZ, datum, max);
         }
         return node;
     }
@@ -144,8 +144,8 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
         RedBlackTree tree = new RedBlackTree(Comparator.naturalOrder());
         //write code to generate a rbtree by populating data, color randomly and by calling generate
         // for left and right subtrees with some probability.
-//        tree.setRoot(generateAux(random, sz));
-        tree.setRoot(generateIntervalAux(random, sz, -K, K));
+//        tree.setRoot(generateAux(random, tree, sz));
+        tree.setRoot(generateIntervalAux(random, tree, sz, -K, K));
         assumeTrue(isValidRedBlackTree(tree));
         return tree;
     }

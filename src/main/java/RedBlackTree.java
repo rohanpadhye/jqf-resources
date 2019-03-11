@@ -24,7 +24,17 @@ public class RedBlackTree extends BinarySearchTree {
         super(c);
     }
 
+    /**
+     * The nodes in a red-black tree store a color together with the actual data
+     * in the node.
+     */
+    public class Node extends LinkedBinaryTreeNode {
+        boolean isRed = false;
 
+        public Node(Object data) {
+            super(data);
+        }
+    }
 
     /**
      * Adds a single data item to the tree. If there is already an item in the
