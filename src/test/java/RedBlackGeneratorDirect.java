@@ -3,7 +3,10 @@ import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 
+import javax.imageio.metadata.IIOInvalidTreeException;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Stack;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -12,11 +15,98 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
 
     public final int K = 100;
     public final int N = 100;
+    public boolean valid = true;
 
     public boolean isValidRedBlackTree(RedBlackTree tree) {
+        BinaryTreeNode root = tree.getRoot();
+        // Check if it is a valid binary search tree.
+        if (!isValidBST(tree)) {
+            return false;
+        }
 
-        return false;
+        // Check if all paths through the tree have the same number of black nodes.
+        if (!consistentPathLength(tree)) {
+            return false;
+        }
+
+        // Check if all red nodes have a black parent.
+        if (!redNodeBlackParent(tree)) {
+            return false;
+        }
+
+        return true;
     }
+
+    public boolean isValidBST(BinarySearchTree tree) {
+//        boolean valid = true;
+        BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor () {
+            Object last = null;
+            @Override
+            public <E> void visit(BinaryTreeNode<E> node) {
+                if (last == null) {
+                    return;
+                }
+                if (tree.compare(last, node) != 1) {
+                    valid = false;
+                }
+            }
+        };
+        tree.root.traverseInorder(v);
+        return valid;
+    }
+
+    public boolean consistentPathLength(RedBlackTree tree) {
+        BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
+            int depth = -1;
+            @Override
+            public <E> void visit(BinaryTreeNode<E> node) {
+                if (node.getLeft() == null && node.getRight() == null) {
+                    int leafDepth = pathLength(tree, (RedBlackTree.Node) node);
+                    if (depth == -1) {
+                        depth = leafDepth;
+                    } else if (depth != leafDepth) {
+                        valid = false;
+                    }
+
+                }
+            }
+        };
+        tree.root.traverseInorder(v);
+        return valid;
+    }
+
+    public int pathLength(RedBlackTree tree, RedBlackTree.Node node) {
+        // if root
+        if (node == tree.getRoot()) {
+            return 1;
+        }
+        if (!node.isRed) {
+            return 1 + pathLength(tree, (RedBlackTree.Node) node.getParent());
+        } else {
+            return pathLength(tree, (RedBlackTree.Node) node.getParent());
+        }
+    }
+
+    public boolean redNodeBlackParent(RedBlackTree tree) {
+        BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
+            @Override
+            public <E> void visit(BinaryTreeNode<E> node) {
+                if (node.getLeft() == null && node.getRight() == null) {
+                    return;
+                }
+                if (((RedBlackTree.Node) node).isRed) {
+                    if ( ((RedBlackTree.Node) node.getLeft()).isRed ||
+                            ((RedBlackTree.Node) node.getRight()).isRed  ) {
+                        valid = false;
+                    }
+                }
+            }
+        };
+        tree.root.traversePreorder(v);
+        return valid;
+    }
+
+
 
     // Generates a single RedBlackTree
     private RedBlackTree generateAux(SourceOfRandomness random, GenerationStatus __ignore__, RedBlackTree tree, int SZ) {
@@ -65,3 +155,5 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
     // 2. Generating trees by creating a parameterized version that can be translated into a RB tree
     // 1 seems easier so I'll do that first
 }
+
+class InvalidTreeException extends Exception{}
