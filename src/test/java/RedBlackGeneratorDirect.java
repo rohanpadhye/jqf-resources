@@ -15,6 +15,7 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
 
     public final int K = 100;
     public final int N = 100;
+    public final double leafProbability = 0.1;
     public boolean valid = true;
 
     public boolean isValidRedBlackTree(RedBlackTree tree) {
@@ -61,29 +62,34 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
             @Override
             public <E> void visit(BinaryTreeNode<E> node) {
                 if (node.getLeft() == null && node.getRight() == null) {
-                    int leafDepth = pathLength(tree, (RedBlackTree.Node) node);
+                    int leafDepth = pathLength(tree, (Node) node);
                     if (depth == -1) {
                         depth = leafDepth;
                     } else if (depth != leafDepth) {
+//                        throw new InvalidTreeException();
                         valid = false;
                     }
-
                 }
             }
         };
         tree.root.traverseInorder(v);
-        return valid;
+//        try {
+//            tree.root.traverseInorder(v);
+//        } catch (InvalidTreeException e) {
+//            return false;
+//        }
+            return valid;
     }
 
-    public int pathLength(RedBlackTree tree, RedBlackTree.Node node) {
+    public int pathLength(RedBlackTree tree, Node node) {
         // if root
         if (node == tree.getRoot()) {
             return 1;
         }
         if (!node.isRed) {
-            return 1 + pathLength(tree, (RedBlackTree.Node) node.getParent());
+            return 1 + pathLength(tree, (Node) node.getParent());
         } else {
-            return pathLength(tree, (RedBlackTree.Node) node.getParent());
+            return pathLength(tree, (Node) node.getParent());
         }
     }
 
@@ -94,9 +100,9 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
                 if (node.getLeft() == null && node.getRight() == null) {
                     return;
                 }
-                if (((RedBlackTree.Node) node).isRed) {
-                    if ( ((RedBlackTree.Node) node.getLeft()).isRed ||
-                            ((RedBlackTree.Node) node.getRight()).isRed  ) {
+                if (((Node) node).isRed) {
+                    if ( ((Node) node.getLeft()).isRed ||
+                            ((Node) node.getRight()).isRed  ) {
                         valid = false;
                     }
                 }
@@ -106,11 +112,30 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
         return valid;
     }
 
-
+    // Generates a single RedBlackTree
+    private Node generateAux(SourceOfRandomness random, int SZ) {
+//            node.left;
+        int datum = random.nextInt(-K, K);
+        Node node = new Node(datum);
+        node.isRed = random.nextBoolean();
+        if (random.nextDouble() >= leafProbability) {
+            node.left = generateAux(random, SZ);
+            node.right = generateAux(random, SZ);
+        }
+        return node;
+    }
 
     // Generates a single RedBlackTree
-    private RedBlackTree generateAux(SourceOfRandomness random, GenerationStatus __ignore__, RedBlackTree tree, int SZ) {
-
+    private Node generateIntervalAux(SourceOfRandomness random, int SZ, int min, int max) {
+//            node.left;
+        int datum = random.nextInt(min, max);
+        Node node = new Node(datum);
+        node.isRed = random.nextBoolean();
+        if (random.nextDouble() >= leafProbability) {
+            node.left = generateIntervalAux(random, SZ, min, datum);
+            node.right = generateIntervalAux(random, SZ, datum, max);
+        }
+        return node;
     }
 
     @Override
@@ -119,7 +144,8 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
         RedBlackTree tree = new RedBlackTree(Comparator.naturalOrder());
         //write code to generate a rbtree by populating data, color randomly and by calling generate
         // for left and right subtrees with some probability.
-        generateAux(random, __ignore__, tree, sz);
+//        tree.setRoot(generateAux(random, sz));
+        tree.setRoot(generateIntervalAux(random, sz, -K, K));
         assumeTrue(isValidRedBlackTree(tree));
         return tree;
     }
@@ -156,4 +182,6 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
     // 1 seems easier so I'll do that first
 }
 
-class InvalidTreeException extends Exception{}
+class InvalidTreeException extends Exception {
+
+}
