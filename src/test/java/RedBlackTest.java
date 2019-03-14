@@ -29,10 +29,7 @@ public class RedBlackTest {
 
     @Fuzz
     public void testUnion(@Size(max=10) List<@From(RedBlackGenerator.class) RedBlackTree> trees) {
-        //TODO do not store history; instead use the visitor
-//        RedBlackTree union = new RedBlackTree(Comparator.naturalOrder());
         RedBlackTree union = new RedBlackTree();
-//        union.add(0);
         for (RedBlackTree tree: trees) {
             BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
                 @Override

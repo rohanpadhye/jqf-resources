@@ -20,7 +20,6 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
     public boolean valid = true;
 
     public boolean isValidRedBlackTree(RedBlackTree tree) {
-        BinaryTreeNode root = tree.getRoot();
         // Check if it is a valid binary search tree.
         if (!isValidBST(tree)) {
             return false;
@@ -40,7 +39,6 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
     }
 
     public boolean isValidBST(BinarySearchTree tree) {
-//        boolean valid = true;
         BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor () {
             Object last = null;
             @Override
@@ -88,19 +86,6 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
         return true;
     }
 
-    public int pathLength(RedBlackTree tree, RedBlackTree.Node node) {
-        // if root
-        if (node == tree.getRoot()) {
-            return 1;
-        }
-        assert(node.getParent() != null);
-        if (!node.isRed) {
-            return 1 + pathLength(tree, (RedBlackTree.Node) node.getParent());
-        } else {
-            return pathLength(tree, (RedBlackTree.Node) node.getParent());
-        }
-    }
-
     public boolean redNodeBlackParent(RedBlackTree tree) {
         BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
             @Override
@@ -134,40 +119,31 @@ public class RedBlackGeneratorDirect extends Generator<RedBlackTree> {
     }
 
     // Generates a single RedBlackTree
-    private RedBlackTree.Node generateIntervalAux(SourceOfRandomness random, RedBlackTree tree, int depth, int min, int max) {
-//            node.left;
+    private RedBlackTree.Node generateIntervalAux(SourceOfRandomness random, RedBlackTree tree, int maxDepth, int min, int max) {
         int datum = random.nextInt(min, max);
         RedBlackTree.Node node = tree.new Node(datum);
-        if (node.getParent() != null) {
-            if (((RedBlackTree.Node) node.getParent()).isRed) {
-                node.isRed = false;
-            }
-//        node.isRed = random.nextBoolean();
-        } else {
-            node.isRed = false;
-        }
+        node.isRed = random.nextBoolean();
 
-        if (depth >= 0) {
-//            if (random.nextDouble() >= leafProbability && depth >= 0) {
-            // not necessarily always have left and right
-            int delta = 1;
-            if (node.isRed) {
-                delta = 0;
+        if (random.nextDouble() >= leafProbability && maxDepth >= 0) {
+            if (random.nextDouble() >= leafProbability) {
+                node.setLeft(generateIntervalAux(random, tree, maxDepth-1, min, datum));
+                node.setRight(generateIntervalAux(random, tree, maxDepth-1, datum, max));
+            } else {
+                if (random.nextBoolean()) {
+                    node.setLeft(generateIntervalAux(random, tree, maxDepth - 1, min, datum));
+                } else {
+                    node.setRight(generateIntervalAux(random, tree, maxDepth - 1, datum, max));
+                }
             }
-            node.setLeft(generateIntervalAux(random, tree, depth-delta, min, datum));
-            node.setRight(generateIntervalAux(random, tree, depth-delta, datum, max));
         }
         return node;
     }
 
     @Override
     public RedBlackTree generate(SourceOfRandomness random, GenerationStatus __ignore__) {
-        int sz = random.nextInt(0,N );
+        int treeDepth = random.nextInt(0,N);
         RedBlackTree tree = new RedBlackTree(Comparator.naturalOrder());
-        //write code to generate a rbtree by populating data, color randomly and by calling generate
-        // for left and right subtrees with some probability.
-//        tree.setRoot(generateAux(random, tree, sz));
-        tree.setRoot(generateIntervalAux(random, tree, sz, -K, K));
+        tree.setRoot(generateIntervalAux(random, tree, treeDepth, -K, K));
         assumeTrue(isValidRedBlackTree(tree));
         return tree;
     }
