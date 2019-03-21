@@ -15,7 +15,7 @@
                 <groupId>edu.berkeley.cs.jqf</groupId>
                 <artifactId>jqf-maven-plugin</artifactId>
                 <!-- confirm the latest version at: https://mvnrepository.com/artifact/edu.berkeley.cs.jqf -->
-                <version>1.0</version>
+                <version>1.1</version>
             </plugin>
         </plugins>
     </build>

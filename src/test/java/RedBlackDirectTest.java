@@ -6,7 +6,6 @@ import javafx.util.Pair;
 import org.junit.runner.RunWith;
 
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
@@ -19,6 +18,7 @@ public class RedBlackDirectTest {
     public boolean valid = true;
 
     public boolean isValidRedBlackTree(RedBlackTree tree) {
+        valid = true;
         // Check if it is a valid binary search tree.
         if (!isValidBST(tree)) {
             return false;
@@ -38,6 +38,7 @@ public class RedBlackDirectTest {
     }
 
     public boolean isValidBST(BinarySearchTree tree) {
+        // Check if the BST's nodes are sorted
         BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor () {
             Object last = null;
             @Override
@@ -55,6 +56,8 @@ public class RedBlackDirectTest {
     }
 
     public boolean pathLengthVerification(RedBlackTree tree) {
+        // Check that the number of black nodes along the path
+        // from the root to any leaf is the same for all leaves.
         Stack<Pair<RedBlackTree.Node, Integer>> depths = new Stack<>();
         depths.push(new Pair<>((RedBlackTree.Node) tree.getRoot(), 0));
         int max_d = -1;
@@ -63,7 +66,7 @@ public class RedBlackDirectTest {
             depths.pop();
             RedBlackTree.Node n = top.getKey();
             int d = top.getValue();
-            if (n.getLeft() == null && n.getRight() == null) {
+            if (n == null) {
                 if (max_d == -1) {
                     max_d = d;
                 } else {
@@ -71,14 +74,11 @@ public class RedBlackDirectTest {
                         return false;
                     }
                 }
-            }
-            if (n.isRed) {
-                d = d + 1;
-            }
-            if (n.getLeft() != null) {
+            } else {
+                if (!n.isRed) {
+                    d = d + 1;
+                }
                 depths.push(new Pair<>((RedBlackTree.Node) n.left, d));
-            }
-            if (n.getRight() != null) {
                 depths.push(new Pair<>((RedBlackTree.Node) n.right, d));
             }
         }
@@ -86,12 +86,10 @@ public class RedBlackDirectTest {
     }
 
     public boolean redNodeBlackParent(RedBlackTree tree) {
+        // Check that every red node has a black parent
         BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
             @Override
             public <E> void visit(BinaryTreeNode<E> node) {
-                if (node.getLeft() == null && node.getRight() == null) {
-                    return;
-                }
                 if (node.getParent() != null) {
                     if (((RedBlackTree.Node) node).isRed && ((RedBlackTree.Node) node.getParent()).isRed) {
                         valid = false;
@@ -105,15 +103,19 @@ public class RedBlackDirectTest {
         return valid;
     }
 
-    @Fuzz
+    @Fuzz(repro="target/fuzz-results/RedBlackDirectTest/testAdd/failures/id_000000")
     public void testAdd(@From(RedBlackGeneratorDirect.class) RedBlackTree tree, int d) {
         assumeTrue(isValidRedBlackTree(tree));
         tree.add(d);
         assertTrue(tree.contains(d));
+//        if (!isValidRedBlackTree(tree)) {
+        assertTrue(isValidRedBlackTree(tree));
+//        }
     }
 
     @Fuzz
     public void testRemove(@From(RedBlackGeneratorDirect.class) RedBlackTree tree, int d) {
+        assumeTrue(isValidRedBlackTree(tree));
         tree.remove(d);
         assertFalse(tree.contains(d));
     }
@@ -122,6 +124,7 @@ public class RedBlackDirectTest {
     public void testUnion(@Size(max=10) List<@From(RedBlackGeneratorDirect.class) RedBlackTree> trees) {
         RedBlackTree union = new RedBlackTree(Comparator.naturalOrder());
         for (RedBlackTree tree: trees) {
+            assumeTrue(isValidRedBlackTree(tree));
             BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
                 @Override
                 public <E> void visit(BinaryTreeNode<E> node) {
