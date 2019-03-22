@@ -110,7 +110,7 @@ Current parent input: <seed>
 Execution speed:      3,130/sec now | 2,819/sec overall
 Total coverage:       <b>213 (0.33% of map)</b>
 Valid coverage:       208 (0.32% of map)
-</pre>
+</code></pre>
 
 In 80 seconds, quick check was able to generate 69,684 valid inputs on my machine, and covered 213 branches.
 
@@ -137,7 +137,7 @@ Current parent input: 15 (favored) {404/620 mutations}
 Execution speed:      2,480/sec now | 2,406/sec overall
 Total coverage:       <b>227 (0.35% of map)</b>
 Valid coverage:       222 (0.34% of map)
-</pre>
+</code></pre>
 
 In 80 seconds, zest was able to generate 87,569 valid inputs on my machine, and covered 227 branches.
 
@@ -184,3 +184,5 @@ The sequence generator in [RedBlackGenerator](https://github.com/rohanpadhye/and
 }
 ```
 This generator is much less complex. It adds and removes elements some number of times. To run the fuzzer, we can take our previous test class, and change instances of `RedBlackGeneratorDirect` to `RedBlackGenerator`, to indicate that we want the generator to be `RedBlackGenerator` for these tests. This test class can be found in [RedBlackTest](https://github.com/rohanpadhye/android-fuzzing/blob/master/src/test/java/RedBlackTest.java).
+
+**TODO add coverage analysis**
