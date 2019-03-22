@@ -166,8 +166,8 @@ diff coverage_quickcheck.out coverage_zest.out
 ```
 to see what the difference in coverage is. On my machine, I found that a branch in [BinarySearchTree.rotateLeft](https://github.com/rohanpadhye/android-fuzzing/blob/a9ab32ce1bf11e4eb29ea3698ea99cd91da5bc37/src/main/java/BinarySearchTree.java#L152) was not covered by QuickCheck, but was by Zest.
 
-# Sequence-based Generator
-As discussed in the [introduction](https://github.com/rohanpadhye/android-fuzzing/blob/master/README.md#introduction), an alternative generator is one that is sequence-based. A sequence-based generator would not handle the raw interior structure as the above stateful generator did, but would rather call implemented functions from the object to manipulate it. In this way, the parameters can be interpreted as a sequence of method calls. This would require less bookkeeping on the test writer's end, and would also result in inputs that are always semantically valid, assuming the implementation is correct. Note that even though the implementation is correct, the above stateful generator often generated invalid inputs.
+## Sequence-based Generator
+As discussed in the [introduction](https://github.com/rohanpadhye/android-fuzzing/blob/master/README.md#introduction), an alternative generator is one that is sequence-based. A sequence-based generator would not handle the raw interior structure as the above stateful generator did, but would rather call implemented functions from the object to manipulate it. In this way, the parameters can be interpreted as a sequence of method calls. This would require less bookkeeping on the test writer's end, and would also result in inputs that are always semantically valid, assuming the implementation is correct. Note that the above stateful generator often generated invalid inputs.
 
 The sequence generator in [RedBlackGenerator](https://github.com/rohanpadhye/android-fuzzing/blob/master/src/test/java/RedBlackGenerator.java) is written as follows:
 ```java
