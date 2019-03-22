@@ -3,13 +3,31 @@ In this tutorial, we will be going through a stateful data structure generator.
 
 We will begin by using an implementation of a Red Black Tree (http://cs.lmu.edu/~ray/notes/redblacktrees/), and our goal is to use fuzzing to test the correctness of the implementation. Zest performs generator-based mutational fuzzing, with feedback from code coverage and input validity. For a specific application, this requires building a parametric generator of the object, as well as a test driver.
 
+There are two ways of implementing a generator for a data structure that we will examine. The first is one that generates an intermediate representation of the structure that might not be valid. The second is one that uses the data structure's implementation to transform the data structure, such as using its `add` and `remove` functionality. A benefit of the former is that it does not rely on the correctness of the implementation, and a benefit of the latter is that it is generally easier to write.
+
 # Requirements
+To run this tutorial, you will need to have installed Java 8 and Apache Maven.
+
+
+Next, you can clone this repository using
+```
+git clone git@github.com:rohanpadhye/android-fuzzing.git
+```
+
+In the pom.xml in this repository, under plugins there is the JQF Maven Plugin>link<. Maven will handle installing this on your system, you should not have to worry about it.
+
+To build and run the fuzzer, you can run:
+```
+mvn jqf:fuzz -Dclass=RedBlackDirect -Dmethod=testAdd
+```
+You can also try it with `-Dmethod=testRemove` and `-Dmethod=testUnion` to try out the other tests.
+
 Java 8, Apache Maven, JQF Maven Plugin
 
 # Test Driver
 The tests that we will be using to verify correctness of the given Red Black Tree will test adding elements, removing elements, and taking the union of multiple trees. These tests are effectively testing the set-like properties of a Red Black Tree, and do not test the performance of the implementation, just correctness.
 
-```
+```java
 @Fuzz
 public void testAdd(@From(RedBlackGeneratorDirect.class) RedBlackTree tree, int d) {
     assumeTrue(isValidRedBlackTree(tree));
@@ -23,7 +41,7 @@ In the above test, the `@Fuzz` annotation tells JQF which tests can be used for 
 
 Inside the method body, we start with our test's precondition, using JUnit's `assumeTrue`. Our precondition for this test is that the tree must be a valid Red Black Tree, which means that it satisfies the invariants that all valid Red Black Trees must satisfy. This is necessary because it may be possible that our generator does not generate semantically valid red black trees. If it is not valid, then JQF will throw this input away, and try to generate another one that is valid. Next, our test logic runs, in this case adding an element. Finally, our test's postconditions are asserted with `assertTrue`. This asserts that the tree does contain the element we just added, and that the tree is still a valid Red Black Tree.
 
-Our test driver uses the method `isValidRedBlackTree`, which tests the tree invariants a valid RedBlackTree must satisfy: it is a binary search tree, each red node must have a black parent and the root is black, and the number of black nodes in the path from the root to a null child is the same for every null child.
+Our test driver uses the method `isValidRedBlackTree`, which tests the three invariants that a valid RedBlackTree must satisfy: it is a binary search tree, each red node must have a black parent and the root is black, and the number of black nodes in the path from the root to a null child is the same for every null child.
 
 # Generator
 
@@ -31,7 +49,7 @@ In the Test Driver section, we noted that the RedBlackTree was generated from JQ
 
 In particular, the method `generate` is called by JQF for generation. One of the parameters, `SourceOfRandomness random`, is the parameterization of the tree, and it is this parameter that is mutated by JQF during fuzzing.
 
-```
+```java
     @Override
     public RedBlackTree generate(SourceOfRandomness random, GenerationStatus __ignore__) {
         int treeDepth = random.nextInt(0,100);
@@ -43,7 +61,7 @@ In particular, the method `generate` is called by JQF for generation. One of the
 
 Here, we construct a new `RedBlackTree`, and set its root node to be `generateIntervalAux(random, tree, treeDepth, -K, K)`.
 
-```
+```java
     private RedBlackTree.Node generateIntervalAux(SourceOfRandomness random, RedBlackTree tree, int maxDepth, int min, int max) {
         int data = random.nextInt(min, max);
         RedBlackTree.Node node = tree.new Node(data);
@@ -110,6 +128,8 @@ Valid coverage:       222 (0.34% of map)
 ```
 
 There is a clear difference in code coverage. 
+*TODO: make numbers that are important red, describe the difference*
+*TODO: diff the coverage to find the line number of an example code line that was covered with JQF vs with quickcheck*
 
 
 
