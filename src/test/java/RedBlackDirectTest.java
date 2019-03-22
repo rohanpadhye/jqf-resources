@@ -103,14 +103,12 @@ public class RedBlackDirectTest {
         return valid;
     }
 
-    @Fuzz(repro="target/fuzz-results/RedBlackDirectTest/testAdd/failures/id_000000")
+    @Fuzz
     public void testAdd(@From(RedBlackGeneratorDirect.class) RedBlackTree tree, int d) {
         assumeTrue(isValidRedBlackTree(tree));
         tree.add(d);
         assertTrue(tree.contains(d));
-//        if (!isValidRedBlackTree(tree)) {
         assertTrue(isValidRedBlackTree(tree));
-//        }
     }
 
     @Fuzz
@@ -118,6 +116,7 @@ public class RedBlackDirectTest {
         assumeTrue(isValidRedBlackTree(tree));
         tree.remove(d);
         assertFalse(tree.contains(d));
+        assertTrue(isValidRedBlackTree(tree));
     }
 
     @Fuzz
@@ -134,6 +133,7 @@ public class RedBlackDirectTest {
             tree.root.traversePreorder(v);
         }
 
+        assertTrue(isValidRedBlackTree(union));
         for (RedBlackTree tree: trees) {
             BinaryTreeNode.Visitor v = new BinaryTreeNode.Visitor() {
                 @Override
